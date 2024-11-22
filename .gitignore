@@ -1,6 +1,7 @@
 /source/llvm-project-new
 /source/img/*
 !/source/img/create-image.sh
+build/
 
 # python
 __pycache__/

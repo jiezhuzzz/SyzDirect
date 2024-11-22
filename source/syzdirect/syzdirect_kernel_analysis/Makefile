@@ -23,10 +23,11 @@ build_analyzer_func = \
 			LLVM_INCLUDE_DIRS=${LLVM_BUILD}/include \
 			CC=${CC} CXX=${CXX} \
 			cmake ${1}	\
+				-G Ninja \
 				-DCMAKE_BUILD_TYPE=Release \
 				-DLLVM_ENABLE_ASSERTIONS=ON \
 				-DCMAKE_CXX_FLAGS_RELEASE="-std=c++17 -fno-rtti -fpic -g" \
-		&& make -j${NPROC})
+		&& ninja)
 
 all: target_analyzer
 

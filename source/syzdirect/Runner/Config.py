@@ -83,12 +83,14 @@ def LoadJson(fn):
 def PreparePathVariables():
 
     ################### resources provided by us ##################
-    global KcovPatchPath,LLVMRootDir,LLVMBuildDir,ClangPath,BigConfigPath,TemplateConfigPath,FuzzerDir,FuzzerBinDir,SyzManagerPath,SyzTRMapPath,SyzFeaturePath
+    global KcovPatchPath,LLVMRootDir,LLVMBuildDir,LLVMCmakeConfigDir,ClangPath,BigConfigPath,TemplateConfigPath,FuzzerDir,FuzzerBinDir,SyzManagerPath,SyzTRMapPath,SyzFeaturePath
     ResourceRoot=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    TopRoot=os.path.dirname(ResourceRoot)
     KcovPatchPath=os.path.join(ResourceRoot,"kcov.diff")
-    LLVMRootDir=os.path.join(ResourceRoot,"..","llvm-project-new")
-    ImgRootDir=os.path.join(ResourceRoot,"..","img")
+    LLVMRootDir=os.path.join(TopRoot, "llvm-project-new")
     LLVMBuildDir=os.path.join(LLVMRootDir,"build")
+    LLVMCmakeConfigDir=os.path.join(LLVMBuildDir,"lib/cmake/llvm")
+    ImgRootDir=os.path.join(TopRoot,"img")
     ClangPath=os.path.join(LLVMBuildDir,"bin/clang")
     BigConfigPath=os.path.join(ResourceRoot,"bigconfig")
     TemplateConfigPath=os.path.join(ResourceRoot,"template_config")
@@ -166,8 +168,8 @@ def PreparePathVariables():
     
     ############### SET BY USER
     global CleanImageTemplatePath,KeyPath
-    CleanImageTemplatePath=""
-    KeyPath=""
+    CleanImageTemplatePath=os.path.join(ImgRootDir,"bullseye.img")
+    KeyPath=os.path.join(ImgRootDir,"bullseye.id_rsa")
     assert os.path.exists(CleanImageTemplatePath), "Please offer clean image path"
     assert os.path.exists(KeyPath), "Please offer key path"
     
@@ -231,7 +233,7 @@ def PrepareBinary():
     ### function_model
     logging.info("Building tool for function modeling")
     if not os.path.exists(FunctionModelBinary):
-        build_function_model_cmd=f'cd {FunctionModelDirRoot} && make clean && make LLVM_BUILD={LLVMBuildDir}'
+        build_function_model_cmd=f'cd {FunctionModelDirRoot} && make clean && make LLVM_BUILD={LLVMBuildDir} LLVM_DIR={LLVMCmakeConfigDir}'
         # print(ExecuteCMD(build_function_model_cmd)[0])
         ExecuteBigCMD(build_function_model_cmd)
     assert os.path.exists(FunctionModelBinary), "Fails to build function modeling tool"
@@ -239,7 +241,7 @@ def PrepareBinary():
     ### kernel_analysis
     logging.info("Building tool for entry extract and distance calculation")
     if not os.path.exists(TargetPointAnalysisBinary):
-        build_kernel_analysis_cmd=f"cd {TargetPointAnalysisDirRoot} && make clean && make LLVM_BUILD={LLVMBuildDir}"
+        build_kernel_analysis_cmd=f"cd {TargetPointAnalysisDirRoot} && make clean && make LLVM_BUILD={LLVMBuildDir} LLVM_DIR={LLVMCmakeConfigDir}"
         ExecuteBigCMD(build_kernel_analysis_cmd)
     assert os.path.exists(TargetPointAnalysisBinary), "Fails to build tool for entry extract and distance calculation"
     
