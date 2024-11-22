@@ -87,6 +87,7 @@ def PreparePathVariables():
     ResourceRoot=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     KcovPatchPath=os.path.join(ResourceRoot,"kcov.diff")
     LLVMRootDir=os.path.join(ResourceRoot,"..","llvm-project-new")
+    ImgRootDir=os.path.join(ResourceRoot,"..","img")
     LLVMBuildDir=os.path.join(LLVMRootDir,"build")
     ClangPath=os.path.join(LLVMBuildDir,"bin/clang")
     BigConfigPath=os.path.join(ResourceRoot,"bigconfig")
@@ -222,28 +223,31 @@ def PrepareBinary():
     ### LLVM
     if not os.path.exists(ClangPath):
         logging.info("Automatically build customized llvm")
-        makecmd=f'cd {LLVMRootDir} && cmake -S llvm -B build -DLLVM_ENABLE_PROJECTS=clang -DCMAKE_BUILD_TYPE=Release && cmake --build build -j {CPUNum}' 
+        makecmd=f'cd {LLVMRootDir} && cmake -S llvm -B build -G Ninja -DLLVM_ENABLE_PROJECTS=clang -DCMAKE_BUILD_TYPE=Release && cmake --build build' 
         # print(ExecuteCMD(makecmd)[0])
         ExecuteBigCMD(makecmd)
     assert os.path.exists(ClangPath), "Fails to build customized llvm(clang)"
         
     ### function_model
     logging.info("Building tool for function modeling")
-    build_function_model_cmd=f'cd {FunctionModelDirRoot} && make clean && make LLVM_BUILD={LLVMBuildDir}'
-    # print(ExecuteCMD(build_function_model_cmd)[0])
-    ExecuteBigCMD(build_function_model_cmd)
+    if not os.path.exists(FunctionModelBinary):
+        build_function_model_cmd=f'cd {FunctionModelDirRoot} && make clean && make LLVM_BUILD={LLVMBuildDir}'
+        # print(ExecuteCMD(build_function_model_cmd)[0])
+        ExecuteBigCMD(build_function_model_cmd)
     assert os.path.exists(FunctionModelBinary), "Fails to build function modeling tool"
     
     ### kernel_analysis
     logging.info("Building tool for entry extract and distance calculation")
-    build_kernel_analysis_cmd=f"cd {TargetPointAnalysisDirRoot} && make clean && make LLVM_BUILD={LLVMBuildDir}"
-    ExecuteBigCMD(build_kernel_analysis_cmd)
+    if not os.path.exists(TargetPointAnalysisBinary):
+        build_kernel_analysis_cmd=f"cd {TargetPointAnalysisDirRoot} && make clean && make LLVM_BUILD={LLVMBuildDir}"
+        ExecuteBigCMD(build_kernel_analysis_cmd)
     assert os.path.exists(TargetPointAnalysisBinary), "Fails to build tool for entry extract and distance calculation"
     
     ### Fuzzer
     logging.info("Building fuzzer")
-    build_fuzzer_cmd=f"cd {FuzzerDir} && make"
-    ExecuteBigCMD(build_fuzzer_cmd)
+    if not os.path.exists(FuzzerBinDir):
+        build_fuzzer_cmd=f"cd {FuzzerDir} && make"
+        ExecuteBigCMD(build_fuzzer_cmd)
     assert os.path.exists(FuzzerBinDir), "Fails to build fuzzer"
     logging.info("Manual check is expected for all the binaries in the bin/, e.p. syz-fuzzer, syz-manager...")
     
