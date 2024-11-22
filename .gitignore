@@ -2,6 +2,7 @@
 /source/img/*
 !/source/img/create-image.sh
 build/
+workdir/
 
 # python
 __pycache__/
