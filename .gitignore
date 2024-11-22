@@ -1,5 +1,5 @@
 /source/llvm-project-new
-/source/img
+/source/img/*
 !/source/img/create-image.sh
 
 # python
